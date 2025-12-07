@@ -1,3 +1,6 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_2D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Mat_Prop_2D(ntens,ndim,E_mod,nu_mod,g_par,C_St_Matr,A_St_Matr)
 c
       include 'ABA_PARAM.INC'
@@ -11,7 +14,7 @@ c
      *                 C_St_Matr, A_St_Matr
       dimension C_St_Matr(ntens,ntens), A_St_Matr(ntens*ndim,ntens*ndim)
 c
-c --- Plane strain
+c !--- Plane strain
 c
       L_Lam=nu_mod*E_mod/(ONE+nu_mod)/(ONE-TWO*nu_mod)
       L_Mu=E_mod/TWO/(ONE+nu_mod)

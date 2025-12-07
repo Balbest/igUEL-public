@@ -1,9 +1,10 @@
-c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_3D_SGE'
+c ------------------------------------------------------------------------------------
 c ! --- Coordinates and weights for Gauss points
 c ! --- Reference:
 c ! --- Weisstein, Eric W. "Legendre-Gauss Quadrature." From MathWorld--A Wolfram Web Resource.
-c ! --- https://mathworld.wolfram.com/Legendre-GaussQuadrature.html
-c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+c ------------------------------------------------------------------------------------
       subroutine GaussLegendre(ninpt,gauss,w)
 c
       include 'ABA_PARAM.INC'

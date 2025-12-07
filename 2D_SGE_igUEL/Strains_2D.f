@@ -1,23 +1,26 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_2D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Strains_2D(ntens,ndof,ndim,NNODE,NDOFEL,U,
      1                      stran,gstran,dR,ddR)
 c
-c  -----------------------------------------------------------------------------------
-c  Components of strain tensor (vector) and its gradient
-c  
-c      stran(1) --> E_xx = d(u_x)/dx
-c      stran(2) --> E_yy = d(u_y)/dy
-c      stran(3) --> E_zz = 0
-c      stran(4) --> E_xy = d(u_x)/dy + d(u_y)/dx !
-c  
-c     gstran(1) --> d(E_xx)/dx
-c     gstran(2) --> d(E_xx)/dy
-c     gstran(3) --> d(E_yy)/dx
-c     gstran(4) --> d(E_yy)/dy
-c     gstran(5) --> d(E_zz)/dx = 0
-c     gstran(6) --> d(E_zz)/dy = 0
-c     gstran(7) --> d(E_xy)/dx
-c     gstran(8) --> d(E_xy)/dy
-c -----------------------------------------------------------------------------------
+c ------------------------------------------------------------------------------------
+c !--- Components of strain tensor (vector) and its gradient
+c
+c !    stran(1) --> E_xx = d(u_x)/dx
+c !    stran(2) --> E_yy = d(u_y)/dy
+c !    stran(3) --> E_zz = 0
+c !    stran(4) --> E_xy = d(u_x)/dy + d(u_y)/dx
+c
+c !   gstran(1) --> d(E_xx)/dx
+c !   gstran(2) --> d(E_xx)/dy
+c !   gstran(3) --> d(E_yy)/dx
+c !   gstran(4) --> d(E_yy)/dy
+c !   gstran(5) --> d(E_zz)/dx = 0
+c !   gstran(6) --> d(E_zz)/dy = 0
+c !   gstran(7) --> d(E_xy)/dx
+c !   gstran(8) --> d(E_xy)/dy
+c ------------------------------------------------------------------------------------
 c
       include 'ABA_PARAM.INC'
 c
@@ -50,13 +53,13 @@ c
             u_n(i) = U(i + k)
          end do
 c
-c      Strain components
+c !--- Strain components
 c
        stran(1) = stran(1) + dRdx*u_n(1)
        stran(2) = stran(2) + dRdy*u_n(2)
        stran(4) = stran(4) + dRdy*u_n(1) + dRdx*u_n(2)
 c
-c      Strain gradient components
+c !--- Strain gradient components
 c
        gstran(1) = gstran(1) + d2Rdx2*u_n(1)
        gstran(2) = gstran(2) + d2Rdxdy*u_n(1)

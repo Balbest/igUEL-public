@@ -1,3 +1,7 @@
+# Copyright (c) 2025 Sergei Khakalo, Viacheslav Balobanov
+# ------------------------------------------------------------------------------------
+# Script uses output data and generates .odb file in folder "results"
+# ------------------------------------------------------------------------------------
 from abaqus import *
 from abaqusConstants import *  # for including all constants
 from odbAccess import *
@@ -65,7 +69,7 @@ def createODB():
         noCompression=OFF,
         noTension=OFF,
         moduli=LONG_TERM,
-        table=((210000, 0.3),),
+        table=((1, 1),),
     )
     #
     # ---Create Section

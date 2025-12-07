@@ -1,7 +1,10 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_3D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Force_Stiff_3D(NNODE,ntens,ndim,ndof,stress,gstress,dV,
      1                          dR,ddR,C_St_Matr,A_St_Matr,force,stiff)
 c
-       include 'ABA_PARAM.INC'
+      include 'ABA_PARAM.INC'
 c
       integer j, jdof, jcol, inc_col, i, idof, irow, icol, inc_row
 c
@@ -40,9 +43,7 @@ c
       LiT = 0.d0 ! --- Transposed strain gradient matrix
 c
       do j = 1, NNODE
-c
-c !--- first derivatives 1-dx, 2-dy, 3-dz
-c !--- second derivatives 1-dx^2, 2-dy^2, 3-dz^2, 4-dydz, 5-dxdz, 6-dxdy
+         inc_col = (j - 1)*ndof
 c
          dRjdx = dR(j,1)
          dRjdy = dR(j,2)
@@ -96,18 +97,15 @@ c
          force_n(1:3) = matmul(transpose(Bj),stress)
      *                + matmul(transpose(Lj),gstress)
 c
-         inc_col = (j - 1)*ndof
-c
          do jdof = 1, ndof
             jcol = jdof + inc_col
             force(jcol) = force(jcol) + force_n(jdof)*dV
          end do
 c
          do i = 1, NNODE
+            inc_row = (i - 1)*ndof
 c
-C !--- first derivatives 1-dx, 2-dy, 3-dz
-C !--- second derivatives 1-dx^2, 2-dy^2, 3-dz^2, 4-dydz, 5-dxdz, 6-dxdy
-c
+
             dRidx = dR(i,1)
             dRidy = dR(i,2)
             dRidz = dR(i,3)
@@ -159,8 +157,6 @@ c
 c
             stiff_n(1:3,1:3) = matmul(Bit, matmul(C_St_Matr,Bj))
      *                       + matmul(Lit, matmul(A_St_Matr,Lj))
-c
-            inc_row = (i -1)*ndof
 c
             do jdof = 1, ndof
                icol = jdof + inc_col

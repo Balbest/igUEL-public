@@ -1,0 +1,10 @@
+Initial geometry input for 2D_strip problem: 1x4 rectangle
+  1  1
+  2  2
+0 0 1 1
+0 0 1 1
+0 -2 0 1
+1 -2 0 1
+0 2 0 1
+1 2 0 1
+EoF

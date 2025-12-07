@@ -1,7 +1,10 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_2D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Force_Stiff_2D(NNODE,ntens,ndim,ndof,stress,gstress,dV,
      1                          dR,ddR,C_St_Matr,A_St_Matr,force,stiff)
 c
-       include 'ABA_PARAM.INC'
+      include 'ABA_PARAM.INC'
 c
       integer j, jdof, jcol, inc_col, i, idof, irow, icol, inc_row
 c
@@ -69,7 +72,7 @@ c
          end do
 c
          do i = 1, NNODE
-            inc_row = (i -1)*ndof
+            inc_row = (i - 1)*ndof
 c
             dRidx = dR(i,1)
             dRidy = dR(i,2)

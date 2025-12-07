@@ -1,0 +1,93 @@
+*HEADING
+MATLAB generated Abaqus Input File for 2D igUEL subroutine 
+
+**
+*NODE,NSET=ALLNODES
+1, 0, -2
+2, 1, -2
+3, 0, -1.8
+4, 1, -1.8
+5, 0, -1.4
+6, 1, -1.4
+7, 0, -0.8
+8, 1, -0.8
+9, 0, 0
+10, 1, 0
+11, 0, 0.8
+12, 1, 0.8
+13, 0, 1.4
+14, 1, 1.4
+15, 0, 1.8
+16, 1, 1.8
+17, 0, 2
+18, 1, 2
+**
+*USER ELEMENT, NODES=12, TYPE=U1, PROPERTIES=17, COORDINATES=2
+1, 2
+**
+*ELEMENT, TYPE=U1, ELSET=ELSET1
+1,
+1,2,
+3,4,
+5,6,
+7,8,
+9,10,
+11,12
+2,
+3,4,
+5,6,
+7,8,
+9,10,
+11,12,
+13,14
+3,
+5,6,
+7,8,
+9,10,
+11,12,
+13,14,
+15,16
+4,
+7,8,
+9,10,
+11,12,
+13,14,
+15,16,
+17,18
+**
+*UEL PROPERTY,ELSET=ELSET1
+2, 6, 1, 4, 18, 1, 5, 4,
+15, 1, 10, 1, 0, 0, 200000, 0.3,
+0.4
+**
+** NOTE: Max number of nodes or elements per line is 10
+**
+*NSET, NSET=NSET_bottom1
+1, 2
+**
+*NSET, NSET=NSET_bottom2
+3, 4
+**
+*NSET, NSET=NSET_top1
+17, 18
+**
+*NSET, NSET=NSET_top2
+15, 16
+**
+*NSET, NSET=NSET_left1
+1, 3, 5, 7, 9, 11, 13, 15, 17
+**
+*NSET, NSET=NSET_left2
+2, 4, 6, 8, 10, 12, 14, 16, 18
+**
+*NSET, NSET=NSET_right1
+2, 4, 6, 8, 10, 12, 14, 16, 18
+**
+*NSET, NSET=NSET_right2
+1, 3, 5, 7, 9, 11, 13, 15, 17
+**
+*STEP,NAME=STEP1
+*STATIC
+**
+*BOUNDARY, TYPE=DISPLACEMENT
+*END STEP

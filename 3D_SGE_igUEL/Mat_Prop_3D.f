@@ -1,3 +1,6 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_3D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Mat_Prop_3D(ntens,ndim,E_mod,nu_mod,g_par,C_St_Matr,A_St_Matr)
 c
       include 'ABA_PARAM.INC'

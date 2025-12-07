@@ -1,3 +1,6 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_3D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Output_3D(Kn_Num_U,Kn_Num_V,Kn_Num_W,KV_U,KV_V,KV_W,Ppol,Qpol,Rpol,
      1                     JELEM,NNODE,NOE,NOCPs,COORDS,U,NDOFEL,MCRD,TIME,
      2                     Num_FE_PP_U,Num_FE_PP_V,Num_FE_PP_W,C_St_Matr,A_St_Matr,
@@ -88,12 +91,6 @@ c
      3                          w_CPs,NOCPs,NNODE,COORDS,MCRD,
      4                          R_NC,dR_NC,ddR_NC,Jdet,JELEM)
 c
-c
-c      if (JELEM .EQ. 9) then
-c      write(7,*)'JELEM =', JELEM
-c      write(7,*)'ddR_NC =', ddR_NC
-c      end if
-c
 c !--- Nodes_in_IGFE: (global) numbers of PP nodes in current knot span (JELEM)
 c !--- NC_in_IGFE   : (global) coordinates of PP nodes in current knot span (JELEM)
 c !--- ND_in_IGFE   : (global) displacements of PP nodes in current knot span (JELEM)
@@ -144,16 +141,6 @@ c
                   gstrain_NC(i_uvw,k1+2*ntens) = gstran(k1+2*ntens)
                end do
 c
-c
-c      if (JELEM .EQ. 9) then
-c      write(7,*)'JELEM =', JELEM
-c      write(7,*)'dR_NC =', dR_NC
-c      write(7,*)'ddR_NC =', ddR_NC
-c      write(7,*)'PPPs, gstran =', gstran
-c      write(7,*)'PPPs, gstrain_NC =', gstrain_NC
-c      end if
-c
-c
             end do ! --- End loop over PP nodes in U-direction
          end do ! --- End loop over PP nodes in V-direction
       end do ! --- End loop over PP nodes in W-direction
@@ -167,7 +154,6 @@ c
       write (inc, "(I0.2)"),KINC
 c
 c ! --- Frames_description.dat
-c ! --- Note: ???
 c
       if (JELEM .EQ. 1) then
 102   format(A,I7,A,f8.3)
@@ -181,14 +167,12 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Nodes.dat
-c ! --- Note: ???
 c
  103  format(A,I6,A,<Nodes_PP>(I9,A))
       write(3000000,103)'<',JELEM,'> ',(Nodes_in_IGFE(i),',',i=1,Nodes_PP)
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Nodes_Coords.dat
-c ! --- Note: ???
 c
  104  format(A,I6,A,<Nodes_PP>(A,I9,A,f25.15,A,f25.15,A,f25.15,A))
       write(4000000,104)'<',JELEM,'> ',
@@ -199,14 +183,12 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Elements.dat
-c ! --- Note: ???
 c
  105  format(A,I6,A,<FE_PP>(I9,A))
       write(5000000,105)'<',JELEM,'> ',((JELEM-1)*FE_PP + i,',',i=1,FE_PP)
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Elements_Nodes.dat
-c ! --- Note: ???
 c
       ijk = 0
       node_shift = (JELEM-1)*Nodes_PP
@@ -250,7 +232,6 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- U_Nodes.dat
-c ! --- Note: ???
 c
  107  format(A,I6,A,<Nodes_PP>(A,f25.15,A,f25.15,A,f25.15,A))
       write(7000000,107)'<',JELEM,'> ',
@@ -260,7 +241,6 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- S_Nodes.dat and E_Nodes.dat
-c ! --- Note: ???
 c
  108  format(A,I6,A,<8*FE_PP>(A,f25.15,A,f25.15,A,f25.15,A,f25.15,A,f25.15,A,f25.15,A))
 c
@@ -375,7 +355,6 @@ c
 c !-----------------------------------------------------------------------------------
 c ! --- gSx_Nodes.dat, gSy_Nodes.dat and gSz_Nodes.dat
 c ! --- gEx_Nodes.dat, gEy_Nodes.dat and gEz_Nodes.dat
-c ! --- Note: ???
 c
  110  format(A,I6,A,<8*FE_PP>(A,f25.15,A,f25.15,A,f25.15,A,f25.15,A,f25.15,A,f25.15,A))
 c

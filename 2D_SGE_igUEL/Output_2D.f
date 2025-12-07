@@ -1,3 +1,6 @@
+c ------------------------------------------------------------------------------------
+c ! --- This supplementary subroutine is part of the main subroutine 'UEL_IGA_2D_SGE'
+c ------------------------------------------------------------------------------------
       subroutine Output_2D(Kn_Num_U,Kn_Num_V,KV_U,KV_V,Ppol,Qpol,JELEM,
      1                     NNODE,NOE,NOCPs,COORDS,U,NDOFEL,MCRD,TIME,
      2                     Num_FE_PP_U,Num_FE_PP_V,C_St_Matr,A_St_Matr,
@@ -137,7 +140,6 @@ c
       write (inc, "(I0.2)"),KINC
 c
 c ! --- Frames_description.dat
-c ! --- Note: ???
 c
       if (JELEM .EQ. 1) then
 102   format(A,I7,A,f8.3)
@@ -151,14 +153,12 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Nodes.dat
-c ! --- Note: ???
 c
  103  format(A,I6,A,<Nodes_PP>(I9,A))
       write(3000000,103)'<',JELEM,'> ',(Nodes_in_IGFE(i),',',i=1,Nodes_PP)
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Nodes_Coords.dat
-c ! --- Note: ???
 c
  104  format(A,I6,A,<Nodes_PP>(A,I9,A,f25.15,A,f25.15,A,f25.15,A))
       write(4000000,104)'<',JELEM,'> ',
@@ -169,14 +169,12 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Elements.dat
-c ! --- Note: ???
 c
  105  format(A,I6,A,<FE_PP>(I9,A))
       write(5000000,105)'<',JELEM,'> ',((JELEM-1)*FE_PP + i,',',i=1,FE_PP)
 c
 c !-----------------------------------------------------------------------------------
 c ! --- Elements_Nodes.dat
-c ! --- Note: ???
 c
       ij = 0
       node_shift = (JELEM-1)*Nodes_PP
@@ -202,7 +200,6 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- U_Nodes.dat
-c ! --- Note: ???
 c
  107  format(A,I6,A,<Nodes_PP>(A,f25.15,A,f25.15,A,f25.15,A))
       write(7000000,107)'<',JELEM,'> ',
@@ -212,7 +209,6 @@ c
 c
 c !-----------------------------------------------------------------------------------
 c ! --- S_Nodes.dat and E_Nodes.dat
-c ! --- Note: ???
 c
  108  format(A,I6,A,<4*FE_PP>(A,f25.15,A,f25.15,A,f25.15,A,f25.15,A))
 c
@@ -263,7 +259,6 @@ c
 c !-----------------------------------------------------------------------------------
 c ! --- gSx_Nodes.dat and gSy_Nodes.dat
 c ! --- gEx_Nodes.dat and gEy_Nodes.dat
-c ! --- Note: ???
 c
  110  format(A,I6,A,<4*FE_PP>(A,f25.15,A,f25.15,A,f25.15,A,f25.15,A))
 c

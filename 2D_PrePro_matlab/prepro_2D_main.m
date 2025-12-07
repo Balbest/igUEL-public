@@ -40,42 +40,27 @@ if nTiles > 0
     end
 end
 %---------------------------Files generation-------------------------------
+% Create outputs directory if it doesn't exist
+if ~exist('analysis_input', 'dir')
+    mkdir('analysis_input');
+end
 % Generate IGA element connectivity and knot multiplicities
 [INP_Elements,KnMultU,KnMultV] = InputElements(nurbs); 
 
 % Generate Abaqus .inp with nodes, elements, materials, BCs
-INP_file_sh (nurbs, INP_Elements, configs)
+INP_file_2D (nurbs, INP_Elements, configs)
 
-% Calculate knot spans for UEL NURBS basis
-NoElU = length(unique(nurbs.knots{1})) - 1; % Number of knot spans in U direction
-NoElV = length(unique(nurbs.knots{2})) - 1; % Number of knot spans in V direction
-KnSpansU = zeros(1, NoElU); 
-KnSpansU(1) = KnMultU(1);
-KnSpansV = zeros(1, NoElV); 
-KnSpansV(1) = KnMultV(1);
+% Generate Ks_Ws.dat containing knot vectors and weights for UEL
+fileID = fopen('analysis_input/Ks_Ws.dat', 'w');
 
-for i = 2:NoElU
-    KnSpansU(i) = KnSpansU(i-1) + KnMultU(i);
-end
-for i = 2:NoElV
-    KnSpansV(i) = KnSpansV(i-1) + KnMultV(i);
-end
-
-% Generate KnotsWeights.dat containing knot vectors and weights for UEL
-fileID = fopen('outputs/KnotsWeights.dat', 'w');
-
-fprintf(fileID, '%.15f ', nurbs.knots{1});
+fprintf(fileID, '%.16g ', nurbs.knots{1});
 fprintf(fileID, '\n');
-fprintf(fileID, '%d ', KnSpansU);
-fprintf(fileID, '\n');
-fprintf(fileID, '%.15f ', nurbs.knots{2});
-fprintf(fileID, '\n');
-fprintf(fileID, '%d ', KnSpansV);
+fprintf(fileID, '%.16g ', nurbs.knots{2});
 fprintf(fileID, '\n');
 
 % Extract and write CP weights
 Weights = squeeze(nurbs.coefs(4, :, :));
-fprintf(fileID, '%.15f ', Weights);
+fprintf(fileID, '%.16g ', Weights);
 fclose(fileID);
 
-fprintf('outputs/KnotsWeights.dat file created successfully\n');
+fprintf('analysis_input/Ks_Ws.dat file created successfully\n');

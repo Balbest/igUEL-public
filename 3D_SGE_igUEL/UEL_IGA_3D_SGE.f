@@ -1,29 +1,10 @@
-! Copyright (c) 2021 Sergei Khakalo, Viacheslav Balobanov
-! The codes (main and included subroutines) are distributed under a CC BY-NC license
-
-! UEL IGA SGE: User Element Subroutine for Isogeometric Analysis of
-!              2D Plane Strain Gradient Elasticity problems.
-
-! Developers:     Sergei Khakalo (sergei.khakalo@vtt.fi)
-!                 Viacheslav Balobanov (viacheslav.balobanov@vtt.fi)
-! Research group: ProperTune ICME, VTT, Espoo, Finland
-
-! If these subroutines are used in your research work, please cite:
-! [A] S. Khakalo, J. Niiranen, Isogeometric analysis of higher-order gradient elasticity
-!     by user elements of a commercial finite element software,
-!     Computer-Aided Design 82 (2017) 154-169. doi.org/10.1016/j.cad.2016.08.005
-! [B] J. Niiranen, S. Khakalo, V. Balobanov, A. H.Niemi,
-!     Variational formulation and isogeometric analysis for
-!     fourth-order boundary value problems of gradient-elastic bar and
-!     plane strain/stress problems,
-!     Computer Methods in Applied Mechanics and Engineering 308 (2016) 182-211. doi.org/10.1016/j.cma.2016.05.008
-! [C] V. Balobanov, J. Kiendl, S. Khakalo, J. Niiranen,
-!     Kirchhoff–Love shells within strain gradient elasticity:
-!     Weak and strong formulations and an H^3-conforming isogeometric implementation,
-!     Computer Methods in Applied Mechanics and Engineering 344 (2019) 837-857. doi.org/10.1016/j.cma.2018.10.006
+! Copyright (c) 2025 Sergei Khakalo, Viacheslav Balobanov
+! The codes (main and included subroutines) are distributed under the MIT License
 c ------------------------------------------------------------------------------------
-! Note: the comments structure and the codes architecture could have been partially adopted from
-! Paneda and Abaqus manuals ...
+!
+! igUEL-SGE-Solid: Abaqus user element (UEL) implementation for isogeometric analysis
+! of 3D strain-gradient-elastic solids
+!
 c ------------------------------------------------------------------------------------
 c
       module indicator
@@ -45,31 +26,33 @@ c
       parameter (ndi=3, nshr=3, ntens=6, ndim=3, ndof=3)
 c
 c ------------------------------------------------------------------------------------
-c ! List of parameters and varaibles
-c ! Scalars:
-c !    ndi     -- number of direct stress components
-c !    nshr    -- number of shear stress components
-c !    ntens   -- total number of stress tensor components (=ndi+nshr)
-c !    ndim    -- number of spatial dimensions
-c !    ndof    -- number of degrees of freedom per control point (node)
+c ! List of parameters/internal variables:
 c !
-c ! Arrays:
-c !    stress  -- Cauchy stresses
-c !    gstress -- double (higher-order) stresses
-c !    stran   -- elastic strains
-c !    gstran  -- gradient of elastic strains
-c !    RR      -- 
-c !    dR      -- 
-c !    ddR     -- 
-c !    KV_U    -- 
-c !    KV_V    -- 
-c !    w_CPs   -- 
-c !    gauss_U -- 
-c !    gauss_V -- 
-c !    gstran  -- 
-c !    gstran  -- 
-c !    gstran  -- 
-c !    gstran  -- 
+c !    ndi       -- number of direct stress components
+c !    nshr      -- number of shear stress components
+c !    ntens     -- total number of stress tensor components (=ndi+nshr)
+c !    ndim      -- number of spatial dimensions
+c !    ndof      -- number of degrees of freedom per control point (node)
+c !
+c !    stress    -- Cauchy (ordinary) stress
+c !    gstress   -- double (higher-order) stress
+c !    stran     -- elastic strain
+c !    gstran    -- gradient of elastic strain
+c !    C_St_Matr -- matrix of (classical) elastic moduli
+c !    A_St_Matr -- matrix of (higher-order) elastic moduli
+c !    RR        -- values of NURBS basis functions
+c !    dR        -- values of 1st derivatives of NURBS basis functions
+c !    ddR       -- values of 2nd derivatives of NURBS basis functions
+c !    KV_U      -- knot vector in U-direction
+c !    KV_V      -- knot vector in V-direction
+c !    KV_W      -- knot vector in W-direction
+c !    w_CPs     -- weights of control points
+c !    gauss_U   -- quadrature (Gauss) nodes in 1-direction
+c !    gauss_V   -- quadrature (Gauss) nodes in 2-direction
+c !    gauss_W   -- quadrature (Gauss) nodes in 3-direction
+c !    w_U       -- weights of quadrature (Gauss) nodes in 1-direction
+c !    w_V       -- weights of quadrature (Gauss) nodes in 2-direction
+c !    w_W       -- weights of quadrature (Gauss) nodes in 3-direction
 c ------------------------------------------------------------------------------------
 c
       double precision RHS, AMATRX, SVARS, PROPS, COORDS
@@ -117,6 +100,8 @@ c
      *        Num_FE_PP_U, Num_FE_PP_V, Num_FE_PP_W, k1, k2, j,
      *        kintk_zeta, kintk_eta, kintk_xi, kintk, i_el, j_el, k_el,
      *        iAux, istat, El_Output, open_ind, ind_sum
+c      
+      logical :: file_exists
 c
 c !--- PID-properties from .inp --------------------------------
 c
@@ -215,7 +200,7 @@ c
       call Strains_3D(ntens,ndof,ndim,NNODE,NDOFEL,U,
      1                stran,gstran,dR,ddR)
 c
-c !--- Cauchy-like stress and double stress
+c !--- Cauchy (ordinary) stress and double (higher-order) stress
 c
        stress  = matmul(C_St_Matr,stran)
        gstress = matmul(A_St_Matr,gstran)
@@ -253,46 +238,83 @@ c
       if (TIME(1) .EQ. 0 .AND. JELEM .EQ. 1) then
 c
           open(3000000,file = trim(folder)//'/Nodes.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           open(4000000,file = trim(folder)//'/Nodes_Coords.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           open(5000000,file = trim(folder)//'/Elements.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           open(6000000,file = trim(folder)//'/Elements_Nodes.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           open(7000000,file = trim(folder)//'/U_Nodes.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           open(8000000,file = trim(folder)//'/S_Nodes.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           open(9000000,file = trim(folder)//'/E_Nodes.dat',
-     *                      ACCESS='APPEND')
+     *                      STATUS='REPLACE', ACTION='WRITE')
 c
           if (El_Output .EQ. 1) then
               open(10000000,file = trim(folder)//'/gSx_Nodes.dat',
-     *                           ACCESS='APPEND')
+     *                           STATUS='REPLACE', ACTION='WRITE')
 c
               open(11000000,file = trim(folder)//'/gSy_Nodes.dat',
-     *                           ACCESS='APPEND')
+     *                           STATUS='REPLACE', ACTION='WRITE')
 c
               open(12000000,file = trim(folder)//'/gSz_Nodes.dat',
-     *                           ACCESS='APPEND')
+     *                           STATUS='REPLACE', ACTION='WRITE')
 c
               open(13000000,file = trim(folder)//'/gEx_Nodes.dat',
-     *                           ACCESS='APPEND')
+     *                           STATUS='REPLACE', ACTION='WRITE')
 c
               open(14000000,file = trim(folder)//'/gEy_Nodes.dat',
-     *                           ACCESS='APPEND')
+     *                           STATUS='REPLACE', ACTION='WRITE')
 c
               open(15000000,file = trim(folder)//'/gEz_Nodes.dat',
-     *                           ACCESS='APPEND')
+     *                           STATUS='REPLACE', ACTION='WRITE')
           end if
+c          
+          if (El_Output .EQ. 0) then
+              INQUIRE(file = trim(folder)//'/gSx_Nodes.dat', EXIST=file_exists)
+              if (file_exists) then
+                  open(10000000,file = trim(folder)//'/gSx_Nodes.dat',STATUS='OLD')
+              close(10000000, status='DELETE')
+              end if    
 c
+              INQUIRE(file = trim(folder)//'/gSy_Nodes.dat', EXIST=file_exists)
+              if (file_exists) then
+                  open(11000000,file = trim(folder)//'/gSy_Nodes.dat',STATUS='OLD')
+              close(11000000, status='DELETE')
+              end if
+c
+              INQUIRE(file = trim(folder)//'/gSz_Nodes.dat', EXIST=file_exists)
+              if (file_exists) then
+                  open(12000000,file = trim(folder)//'/gSz_Nodes.dat',STATUS='OLD')
+              close(12000000, status='DELETE')
+              end if
+c              
+              INQUIRE(file = trim(folder)//'/gEx_Nodes.dat', EXIST=file_exists)
+              if (file_exists) then
+                  open(13000000,file = trim(folder)//'/gEx_Nodes.dat',STATUS='OLD')
+              close(13000000, status='DELETE')
+              end if
+c              
+              INQUIRE(file = trim(folder)//'/gEy_Nodes.dat', EXIST=file_exists)
+              if (file_exists) then
+                  open(14000000,file = trim(folder)//'/gEy_Nodes.dat',STATUS='OLD')
+              close(14000000, status='DELETE')
+              end if
+c              
+              INQUIRE(file = trim(folder)//'/gEz_Nodes.dat', EXIST=file_exists)
+              if (file_exists) then
+                  open(15000000,file = trim(folder)//'/gEz_Nodes.dat',STATUS='OLD')
+              close(15000000, status='DELETE')
+              end if
+          end if
       end if
 c
 c
@@ -304,8 +326,6 @@ c
      1               JELEM,NNODE,NOE,NOCPs,COORDS,U,NDOFEL,MCRD,TIME,
      2               Num_FE_PP_U,Num_FE_PP_V,Num_FE_PP_W,C_St_Matr,A_St_Matr,
      3               i_el,j_el,k_el,w_CPs,cwd,KINC,ndim,ndof,ntens,El_Output)
-c
-c ! --- Write ind_close(JELEM)=1 and check if for all elements = 1
 c
       ind_close(JELEM) = 1
       ind_sum = 0
@@ -336,7 +356,7 @@ c
       return
       end subroutine UEL
 c
-c     Inclusion of additional subroutines
+c! --- Inclusion of additional subroutines
 c
       include "./GaussLegendre.f"
       include "./Mat_Prop_3D.f"

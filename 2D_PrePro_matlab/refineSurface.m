@@ -29,14 +29,15 @@ end
 new_knots_u = knots_refine(nurbs.knots{1}, config.ref_u);
 new_knots_v = knots_refine(nurbs.knots{2}, config.ref_v);
 nurbs = nrbkntins(nurbs, {new_knots_u new_knots_v});
-
+end
 
 function new_knots = knots_refine(kntvec,refN)
 kntvec_uniq = unique(kntvec);
-new_knots = zeros(1,refN*(length(kntvec_uniq)-1));
+refKn = refN - 1; %no of knots to insert
+new_knots = zeros(1,refKn*(length(kntvec_uniq)-1));
 for i=1:length(kntvec_uniq)-1
-    new_knots_i = linspace(kntvec_uniq(i),kntvec_uniq(i+1),refN+2);
+    new_knots_i = linspace(kntvec_uniq(i),kntvec_uniq(i+1),refKn+2);
     new_knots_i = new_knots_i(2:end-1);
-    new_knots(((i-1)*refN+1):(i*refN)) = new_knots_i;
+    new_knots(((i-1)*refKn+1):(i*refKn)) = new_knots_i;
 end
-
+end

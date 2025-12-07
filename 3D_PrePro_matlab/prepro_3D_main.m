@@ -4,7 +4,9 @@
 
 clear;
 configs = config(); % Read configuration parameters
-addpath(genpath('../2D_PrePro_matlab/')) % Path to 2D functions used
+
+% Path to 2D functions: geometryImport, refineSurface, inputElements
+addpath(genpath('../2D_PrePro_matlab/')) 
 
 %---------------------------Read geometry files---------------------------
 % Read two surfaces for 3D solid generation
@@ -34,7 +36,7 @@ if nTiles > 0
     if configs.plotCPs
         nexttile
         nrbctrlplot(nurbs1)
-        title('Control Points - Surface 1')
+        title('Grid of Control Points - Surface 1')
     end
 end
 
@@ -51,27 +53,16 @@ NofEl_U = length(unique(xi)) - 1;
 NofEl_V = length(unique(eta)) - 1;
 NofEl_2D = NofEl_U * NofEl_V;
 
-% Generate control point coordinates from the 1st surface
-CP1 = nurbs1.coefs;
-CP2 = nurbs2.coefs;
-
 % Initialize coordinate arrays for the 1st surface
-INP_CPs_Coords = zeros(4, NoCPs2D);
+CP1 = zeros(4, NoCPs2D);
+CP2 = zeros(4, NoCPs2D);
 for j = 1:NoCPsV
     for i = 1:NoCPsU
         NoCP = NoCPsU*(j-1) + i;
-        INP_CPs_Coords(1,NoCP) = NoCP;
-        INP_CPs_Coords(2:4,NoCP) = CP1(1:3,i,j);
-    end
-end
-
-% Store the 2nd surface coordinates in nurbs2 structure for later use
-nurbs2.INP_CPs_Coords = zeros(4, NoCPs2D);
-for j = 1:NoCPsV
-    for i = 1:NoCPsU
-        NoCP = NoCPsU*(j-1) + i;
-        nurbs2.INP_CPs_Coords(1,NoCP) = NoCP;
-        nurbs2.INP_CPs_Coords(2:4,NoCP) = CP2(1:3,i,j);
+        CP1(1,NoCP) = NoCP;
+        % Convert CP coordinates back to Cartesian CS
+        CP1(2:4,NoCP) = nurbs1.coefs(1:3,i,j) ./ nurbs1.coefs(4,i,j);
+        CP2(2:4,NoCP) = nurbs2.coefs(1:3,i,j) ./ nurbs2.coefs(4,i,j);
     end
 end
 
@@ -81,33 +72,32 @@ end
 NoCPsW = length(z_CPs);
 
 % Create 3D weights vector
-Vector_of_Weights = ones(1, NoCPs2D); % Assume unit weights for now
+Vector_of_Weights = squeeze(nurbs1.coefs(4, :, :));
 Weights = Vector_of_Weights;
-for i = 2:NoCPsW-1
+for i = 2:NoCPsW
     Weights = [Weights Vector_of_Weights];
 end
-Weights = [Weights Vector_of_Weights]; % Last layer
 
 %-------------------------Generate 3D control points----------------------
 % Fill the volume between two surfaces with CPs
 INP_CPs_Coords_3D = zeros(4, NoCPs2D * NoCPsW);
 
 % 1st layer (surface 1)
-INP_CPs_Coords_3D(:, 1:NoCPs2D) = INP_CPs_Coords;
+INP_CPs_Coords_3D(:, 1:NoCPs2D) = CP1;
 
 % Intermediate layers
 for i = 1:NoCPs2D
     for j = 2:NoCPsW-1
         idx = i + NoCPs2D*(j-1);
         INP_CPs_Coords_3D(1,idx) = idx;
-        INP_CPs_Coords_3D(2:4,idx) = INP_CPs_Coords(2:4,i) + ...
-            (nurbs2.INP_CPs_Coords(2:4,i) - INP_CPs_Coords(2:4,i)) * z_CPs(j);
+        INP_CPs_Coords_3D(2:4,idx) = CP1(2:4,i) + ...
+            (CP2(2:4,i) - CP1(2:4,i)) * z_CPs(j);
     end
 
     % Last layer (surface 2)
     idx = i + NoCPs2D*(NoCPsW-1);
     INP_CPs_Coords_3D(1,idx) = idx;
-    INP_CPs_Coords_3D(2:4,idx) = nurbs2.INP_CPs_Coords(2:4,i);
+    INP_CPs_Coords_3D(2:4,idx) = CP2(2:4,i);
 end
 
 %------------------------------Elements------------------------------------
@@ -139,15 +129,15 @@ for el_w = 1:configs.num_el_w
     end
 end
 
-%-------------------------Generate UEL Data File--------------------------
+%---------------------------Files generation-------------------------------
 % Create outputs directory if it doesn't exist
-if ~exist('outputs', 'dir')
-    mkdir('outputs');
+if ~exist('analysis_input', 'dir')
+    mkdir('analysis_input');
 end
 
-% Create KnotsWeights.dat for Fortran UEL with 3D format
-fileID = fopen('outputs/KnotsWeights.dat','w');
-formatSpec = '%.15f ';
+% Create Ks_Ws.dat
+fileID = fopen('analysis_input/Ks_Ws.dat','w');
+formatSpec = '%.16g ';
 fprintf(fileID,formatSpec,xi);
 fprintf(fileID,'\n');
 fprintf(fileID,formatSpec,eta);
@@ -157,10 +147,7 @@ fprintf(fileID,'\n');
 fprintf(fileID,formatSpec,Weights);
 fclose(fileID);
 
-fprintf('outputs/KnotsWeights.dat file created successfully\n');
+fprintf('analysis_input/Ks_Ws.dat file created successfully\n');
 
-%-------------------------Generate Abaqus INP file------------------------
 % Call the INP file generation function
-INP_file_3D(nurbs1, nurbs2, INP_Elements, INP_CPs_Coords_3D, KnMultU, KnMultV, zeta, Weights, configs);
-
-fprintf('3D preprocessing completed successfully\n');
+INP_file_3D(nurbs1, INP_Elements, INP_CPs_Coords_3D, zeta, configs);

@@ -1,0 +1,10 @@
+Initial geometry input for 3D_square_prism problem: square, bottom
+  1  1
+  2  2
+0 0 1 1
+0 0 1 1
+0 0 0 1
+1 0 0 1
+0 4 0 1
+1 4 0 1
+EoF
